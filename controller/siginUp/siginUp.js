@@ -29,7 +29,6 @@ const postUser = async (req, res) => {
         await createDbNewUser({ name: userName, email: email, password: cryptPassword });
         return res.sendStatus(201);
     } catch (error) {
-        console.log(error);
         res.sendStatus(500);
     }
 }

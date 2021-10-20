@@ -8,6 +8,6 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/SignUp", postUser);
-app.get("/", getUser);
+app.post("/", getUser);
 
 app.listen(4000);

@@ -5,7 +5,7 @@ import { existOne } from '../../dataBase/dataBaseValidations.js';
 const getUser = async (req, res) => {
     const { email, password } = req.body;
     const { error } = siginInSchema.validate(req.body);
-    if (!!error) return res.status(401).send(error);
+    if (!!error) return res.status(400).send(error);
 
     try {
         const isUser = await existOne({
@@ -17,7 +17,7 @@ const getUser = async (req, res) => {
             ],
             table: 'users'
         });
-        if (isUser.rowCount === 0) return res.sendStatus(404);
+        if (isUser.rowCount === 0) return res.sendStatus(401);
 
         if (!bcrypt.compareSync(password, isUser.rows[0].password)) return res.sendStatus(401);
 
@@ -28,7 +28,6 @@ const getUser = async (req, res) => {
 
         return res.status(200).send(user);
     } catch (error) {
-        console.log(error);
         res.sendStatus(500);
     }
 }
