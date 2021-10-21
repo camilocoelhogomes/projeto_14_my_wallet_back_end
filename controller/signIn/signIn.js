@@ -8,7 +8,7 @@ const getUser = async (req, res) => {
     const { email, password } = req.body;
     const { error } = siginInSchema.validate(req.body);
     if (!!error) return res.status(400).send(error);
-
+    let token;
     try {
         const isUser = await existOne({
             dataSearch: [
@@ -22,11 +22,28 @@ const getUser = async (req, res) => {
         if (isUser.rowCount === 0) return res.sendStatus(401);
 
         if (!bcrypt.compareSync(password, isUser.rows[0].password)) return res.sendStatus(401);
-        const token = uuid();
-        await postToken({ userId: isUser.rows[0].id, token });
+
+        const isToken = await existOne(
+            {
+                dataSearch: [
+                    {
+                        collum: 'userId',
+                        data: isUser.rows[0].id
+                    }
+                ],
+                table: 'sessions',
+            }
+        );
+
+        if (!isToken.rowCount) {
+            token = uuid();
+            await postToken({ userId: isUser.rows[0].id, token });
+        } else {
+            token = isToken.rows[0].token;
+        }
+
         const user = {
             name: isUser.rows[0].name,
-            email: isUser.rows[0].email,
             token,
         };
 
