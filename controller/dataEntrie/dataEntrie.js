@@ -36,6 +36,19 @@ const getContabilData = async (req, res) => {
     if (!token) return res.sendStatus(401);
 
     try {
+        const isUser = await existOne(
+            {
+                dataSearch: [
+                    {
+                        collum: 'token',
+                        data: token
+                    }
+                ],
+                table: 'sessions',
+            }
+        );
+
+        if (!isUser.rowCount) return res.sendStatus(401);
         const userData = await getContabilDataDb({ token: token });
         if (!userData.rowCount) return res.sendStatus(204);
         return res.status(200).send({ movments: userData.rows });
