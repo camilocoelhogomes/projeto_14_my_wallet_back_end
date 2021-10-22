@@ -8,10 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/SignUp", postUser);
-app.post("/", getUser);
+app.post("/sign-up", postUser);
+app.post("/sign-in", getUser);
 
-app.post("/contabilData", postContabilData);
-app.get("/contabilData", getContabilData);
+app.post("/contabil-data", postContabilData);
+app.get("/contabil-data", getContabilData);
 
 export default app;

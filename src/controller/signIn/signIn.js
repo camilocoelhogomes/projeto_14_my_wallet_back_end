@@ -1,8 +1,8 @@
 import siginInSchema from './validateSignIn.js';
 import bcrypt from 'bcrypt';
-import { existOne } from '../../dataBase/dataBaseValidations.js.js';
+import { existOne } from '../../dataBase/dataBaseValidations.js';
 import { v4 as uuid } from 'uuid';
-import { postToken } from '../../dataBase/signInDbFunctions/postToken.js.js';
+import { postToken } from '../../dataBase/signInDbFunctions/postToken.js';
 
 const getUser = async (req, res) => {
     const { email, password } = req.body;
