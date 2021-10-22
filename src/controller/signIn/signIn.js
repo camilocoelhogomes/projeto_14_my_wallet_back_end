@@ -8,7 +8,6 @@ const getUser = async (req, res) => {
     const { email, password } = req.body;
     const { error } = siginInSchema.validate(req.body);
     if (!!error) return res.status(400).send(error);
-    console.log(req.body);
     let token;
     try {
         const isUser = await existOne({

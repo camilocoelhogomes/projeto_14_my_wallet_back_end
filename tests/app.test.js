@@ -7,7 +7,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+    await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+    const body = {
+        name: 'Camilo',
+        email: 'camilo.coelho.gomes@gmail.com',
+        password: '12345678*AbC',
+        passwordConfirm: '12345678*AbC',
+    }
+    return await supertest(app).post('/sign-up').send(body);
+
 });
 
 describe("POST /sigin-up", () => {
@@ -231,6 +239,11 @@ describe("POST /log-out", () => {
 
     it("return 400 for a invalid logout", async () => {
         const result = await supertest(app).post('/log-out').set('Authorization', '');
+        expect(result.status).toEqual(400);
+    });
+
+    it("return 400 for a invalid token", async () => {
+        const result = await supertest(app).post('/log-out').set('Authorization', 'sadfasdfasdf');
         expect(result.status).toEqual(400);
     });
 })
