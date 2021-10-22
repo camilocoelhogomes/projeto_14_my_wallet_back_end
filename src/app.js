@@ -14,4 +14,4 @@ app.post("/", getUser);
 app.post("/contabilData", postContabilData);
 app.get("/contabilData", getContabilData);
 
-app.listen(4000);
+export default app;

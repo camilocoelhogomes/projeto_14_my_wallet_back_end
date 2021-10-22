@@ -1,6 +1,6 @@
-import { existOne } from "../../dataBase/dataBaseValidations.js";
-import { postContabilDataDb } from "../../dataBase/postContabilDataDb/postContabilDataDb.js";
-import { getContabilDataDb } from "../../dataBase/postContabilDataDb/getContabilDataDb.js";
+import { existOne } from "../../dataBase/dataBaseValidations.js.js";
+import { postContabilDataDb } from "../../dataBase/postContabilDataDb/postContabilDataDb.js.js";
+import { getContabilDataDb } from "../../dataBase/postContabilDataDb/getContabilDataDb.js.js";
 import dataEntrieSchema from "./dataEntrieSchema.js";
 
 const postContabilData = async (req, res) => {

@@ -1,7 +1,7 @@
 import signUpSchema from './validateSignUp.js';
 import bcrypt from 'bcrypt';
 import { createDbNewUser } from '../../dataBase/signUpDbFunctions/signUpDbFunctions.js';
-import { existOne } from '../../dataBase/dataBaseValidations.js';
+import { existOne } from '../../dataBase/dataBaseValidations.js.js';
 
 const postUser = async (req, res) => {
     const { name: userName, email, password } = req.body;
