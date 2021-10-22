@@ -4,11 +4,10 @@ import { createDbNewUser } from '../../dataBase/signUpDbFunctions/signUpDbFuncti
 import { existOne } from '../../dataBase/dataBaseValidations.js';
 
 const postUser = async (req, res) => {
-    const { name: userName, email, password } = req.body;
-
+    const { name: userName, email, password, passwordConfirm } = req.body;
     const { error } = signUpSchema.validate(req.body);
     if (!!error) return res.status(400).send(error.details);
-
+    if (password != passwordConfirm) return res.sendStatus(400)
     const cryptPassword = bcrypt.hashSync(password, 10);
     try {
         const isUser = await existOne({

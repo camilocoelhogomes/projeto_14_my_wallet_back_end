@@ -15,7 +15,8 @@ describe("POST /sigin-up", () => {
         const body = {
             name: 'Camilo',
             email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+            password: '12345678*AbC',
+            passwordConfirm: '12345678*AbC',
         }
         const result = await supertest(app).post('/sign-up').send(body);
         expect(result.status).toEqual(201)
@@ -25,7 +26,8 @@ describe("POST /sigin-up", () => {
         const body = {
             name: 'Camilo',
             email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+            password: '12345678*AbC',
+            passwordConfirm: '12345678*AbC',
         }
         const result = await supertest(app).post('/sign-up').send(body);
         expect(result.status).toEqual(409)
@@ -35,6 +37,18 @@ describe("POST /sigin-up", () => {
         const body = {
             name: 'Camilo',
             email: 'camilo.coelho.gomes@gmail.com',
+            password: '12345678*AbC',
+        }
+        const result = await supertest(app).post('/sign-up').send(body);
+        expect(result.status).toEqual(400)
+    });
+
+    it("returns 400 for wrong confirm password", async () => {
+        const body = {
+            name: 'Camilo',
+            email: 'camilo.coelho.gomes@gmail.com',
+            password: '12345678*AbC',
+            passwordConfirm: '12345678*AbCd',
         }
         const result = await supertest(app).post('/sign-up').send(body);
         expect(result.status).toEqual(400)
@@ -200,4 +214,23 @@ describe("GET /contabil-data", () => {
         const result = await supertest(app).get('/contabil-data').set('Authorization', token);
         expect(result.status).toEqual(204)
     })
+})
+
+describe("POST /log-out", () => {
+    it("return 200 for a valid logout", async () => {
+        const bodyLogin = {
+            email: 'camilo.coelho.gomes@gmail.com',
+            password: '12345678*AbC'
+        }
+        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
+        const token = `Bearer ${resultLogin.body.token}`
+
+        const result = await supertest(app).post('/log-out').set('Authorization', token);
+        expect(result.status).toEqual(200);
+    });
+
+    it("return 400 for a invalid logout", async () => {
+        const result = await supertest(app).post('/log-out').set('Authorization', '');
+        expect(result.status).toEqual(400);
+    });
 })

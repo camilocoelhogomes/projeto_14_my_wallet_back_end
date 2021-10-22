@@ -14,4 +14,5 @@ app.post("/sign-in", getUser);
 app.post("/contabil-data", postContabilData);
 app.get("/contabil-data", getContabilData);
 
+app.post("/log-out", postLogout);
 export default app;
