@@ -1,13 +1,18 @@
 import { existOne } from "../../dataBase/dataBaseValidations.js";
 import { postContabilDataDb } from "../../dataBase/postContabilDataDb/postContabilDataDb.js";
 import { getContabilDataDb } from "../../dataBase/postContabilDataDb/getContabilDataDb.js";
+import dataEntrieSchema from "./dataEntrieSchema.js";
+
 const postContabilData = async (req, res) => {
 
     const authorization = req.headers.authorization;
     const token = authorization?.replace('Bearer ', '');
     if (!token) return res.sendStatus(401);
     const movementData = req.body;
-
+    const { error: joiError } = dataEntrieSchema.validate(movementData);
+    if (joiError || (movementData?.contabilType === 'credit' ? movementData?.contabilType !== 'debit' : movementData?.contabilType === 'debit')) {
+        return res.sendStatus(400);
+    }
     try {
         const isUser = await existOne(
             {
