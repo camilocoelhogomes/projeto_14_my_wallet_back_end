@@ -6,6 +6,10 @@ beforeAll(async () => {
     return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
 });
 
+afterAll(async () => {
+    return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+});
+
 describe("POST /sigin-up", () => {
     it("returns 201 for valit params", async () => {
         const body = {
