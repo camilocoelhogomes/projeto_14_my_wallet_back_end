@@ -67,6 +67,7 @@ describe("POST /sigin-in", () => {
 });
 
 describe("POST /contabil-data", () => {
+
     it("returns 201 for valid credit", async () => {
         const bodyLogin = {
             email: 'camilo.coelho.gomes@gmail.com',
@@ -79,6 +80,7 @@ describe("POST /contabil-data", () => {
             contabilType: 'credit',
             value: 10.5,
         }
+
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
         expect(result.status).toEqual(201)
@@ -106,7 +108,8 @@ describe("POST /contabil-data", () => {
     it("returns 400 for invalid contabilType", async () => {
         const bodyLogin = {
             email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+            password: '12345678*AbC',
+            contabilType: 'deit',
         }
         const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
         const token = `Bearer ${resultLogin.body.token}`
@@ -156,3 +159,41 @@ describe("POST /contabil-data", () => {
     });
 
 });
+
+describe("GET /contabil-data", () => {
+    afterEach(async () => {
+        await connection.query(`DELETE FROM entries`);
+    })
+    it("return 200 for valid entrie", async () => {
+        const bodyLogin = {
+            email: 'camilo.coelho.gomes@gmail.com',
+            password: '12345678*AbC'
+        }
+        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
+        const token = `Bearer ${resultLogin.body.token}`
+        const result = await supertest(app).get('/contabil-data').set('Authorization', token);
+        expect(result.status).toEqual(200)
+    })
+
+    it("return 401 for no authorization", async () => {
+        const result = await supertest(app).get('/contabil-data');
+        expect(result.status).toEqual(401)
+    })
+
+    it("return 401 for wrong token", async () => {
+        const token = 'sdfasdfasdf';
+        const result = await supertest(app).get('/contabil-data').set('Authorization', token);
+        expect(result.status).toEqual(401)
+    })
+
+    it("return 204 for valid token and no data", async () => {
+        const bodyLogin = {
+            email: 'camilo.coelho.gomes@gmail.com',
+            password: '12345678*AbC'
+        }
+        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
+        const token = `Bearer ${resultLogin.body.token}`
+        const result = await supertest(app).get('/contabil-data').set('Authorization', token);
+        expect(result.status).toEqual(204)
+    })
+})
