@@ -7,12 +7,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries;
-    INSERT INTO 
-            users (name,email,password)
-        VALUES
-            ('Camilo','camilo.coelho.gomes@gmail.com','$2b$10$3yXzP78c.Asre0Ye.CYOte5YEnzvwF8drtABPK0kEysU8eaDBsbWW');
-    `)
+    return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries;`)
 })
 
 describe("POST /sigin-up", () => {

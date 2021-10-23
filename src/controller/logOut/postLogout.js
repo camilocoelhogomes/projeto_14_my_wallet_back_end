@@ -22,7 +22,6 @@ const postLogout = async (req, res) => {
         await logOutDb({ token });
         return res.sendStatus(200);
     } catch (error) {
-        console.log(error);
         res.sendStatus(500);
     }
 }

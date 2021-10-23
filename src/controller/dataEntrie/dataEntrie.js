@@ -33,7 +33,6 @@ const postContabilData = async (req, res) => {
         await postContabilDataDb({ ...movementData, userId: isUser.rows[0].userId });
         res.status(201).send({ ...movementData, userId: isUser.rows[0].userId });
     } catch (error) {
-        console.log(error)
         res.sendStatus(500)
     }
 }
@@ -63,7 +62,6 @@ const getContabilData = async (req, res) => {
         const total = totalArray.rows.reduce((acc, cur) => cur.contabilType === 'credit' ? acc + cur.sum : acc - cur.sum, 0);
         return res.status(200).send({ movments: userData.rows, total });
     } catch (error) {
-        console.log(error);
         res.sendStatus(500);
     }
 }
