@@ -6,19 +6,13 @@ beforeAll(async () => {
     return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
 });
 
-afterAll(async () => {
-    await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
-    const body = {
-        name: 'Camilo',
-        email: 'camilo.coelho.gomes@gmail.com',
-        password: '12345678*AbC',
-        passwordConfirm: '12345678*AbC',
-    }
-    return await supertest(app).post('/sign-up').send(body);
-
-});
 
 describe("POST /sigin-up", () => {
+
+    afterAll(async () => {
+        return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+    })
+
     it("returns 201 for valit params", async () => {
         const body = {
             name: 'Camilo',
@@ -61,16 +55,54 @@ describe("POST /sigin-up", () => {
         const result = await supertest(app).post('/sign-up').send(body);
         expect(result.status).toEqual(400)
     });
+
+    it("returns 400 for wrong confirm email", async () => {
+        const body = {
+            name: 'Camilo',
+            email: 'camilo.coelho.gomesgmail.com',
+            password: '12345678*AbC',
+            passwordConfirm: '12345678*AbCd',
+        }
+        const result = await supertest(app).post('/sign-up').send(body);
+        expect(result.status).toEqual(400)
+    });
+
+    it("returns 400 for wrong invalid password", async () => {
+        const body = {
+            name: 'Camilo',
+            email: 'camilo.coelho.gomesgmail.com',
+            password: '12345678AbC',
+            passwordConfirm: '12345678AbCd',
+        }
+        const result = await supertest(app).post('/sign-up').send(body);
+        expect(result.status).toEqual(400)
+    });
 });
 
 describe("POST /sigin-in", () => {
+
+    beforeAll(async () => {
+        return connection.query(`
+        INSERT INTO 
+            users (name,email,password)
+        VALUES
+            ('Camilo','camilo.coelho.gomes@gmail.com','$2b$10$3yXzP78c.Asre0Ye.CYOte5YEnzvwF8drtABPK0kEysU8eaDBsbWW');
+            `)
+    });
+
+    afterAll(async () => {
+        return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+    })
+
     it("returns 200 for valid entrie", async () => {
         const body = {
             email: 'camilo.coelho.gomes@gmail.com',
             password: '12345678*AbC'
         }
         const result = await supertest(app).post('/sign-in').send(body);
-        expect(result.status).toEqual(200)
+        expect(result.status).toEqual(200);
+        expect(result.body).toHaveProperty('token');
+        expect(result.body).toHaveProperty('name');
     });
 
     it("returns 400 for invalid body", async () => {
@@ -94,18 +126,30 @@ describe("POST /sigin-in", () => {
 
 describe("POST /contabil-data", () => {
 
-    it("returns 201 for valid credit", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+
+    beforeAll(
+        async () => {
+            await connection.query(`
+        INSERT INTO 
+            sessions ("userId",token) 
+        VALUES 
+            (1,'f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb');
+        `)
         }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
+    )
+
+    afterAll(async () => {
+        return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+    })
+
+    it("returns 201 for valid credit", async () => {
         const body = {
             description: 'Test entrie',
             contabilType: 'credit',
             value: 10.5,
         }
+
+        const token = 'Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb';
 
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
@@ -114,17 +158,13 @@ describe("POST /contabil-data", () => {
     });
 
     it("returns 201 for valid debit", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
-        }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
         const body = {
             description: 'Test entrie',
             contabilType: 'debit',
             value: 10.5,
         }
+        const token = 'Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb';
+
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
         expect(result.status).toEqual(201)
@@ -132,18 +172,14 @@ describe("POST /contabil-data", () => {
     });
 
     it("returns 400 for invalid contabilType", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC',
-            contabilType: 'deit',
-        }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
         const body = {
             description: 'Test entrie',
             contabilType: 'debt',
             value: 10.5,
         }
+
+        const token = 'Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb';
+
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
         expect(result.status).toEqual(400)
@@ -151,15 +187,10 @@ describe("POST /contabil-data", () => {
     });
 
     it("returns 400 for invalid body", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
-        }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
         const body = {
             description: 'Test entrie',
         }
+        const token = 'Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb';
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
         expect(result.status).toEqual(400)
@@ -167,17 +198,12 @@ describe("POST /contabil-data", () => {
     });
 
     it("returns 401 for invalid token", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
-        }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer `
         const body = {
             description: 'Test entrie',
             contabilType: 'credit',
             value: 10.5,
         }
+        const token = 'Bearer f85a0ca8-2d4f-44e6-bf38-d07f6b9008cb';
         const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
 
         expect(result.status).toEqual(401)
@@ -185,20 +211,67 @@ describe("POST /contabil-data", () => {
     });
 
 });
-
+//
 describe("GET /contabil-data", () => {
-    afterEach(async () => {
-        await connection.query(`DELETE FROM entries`);
-    })
-    it("return 200 for valid entrie", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+    beforeAll(
+        async () => {
+            await connection.query(`
+        INSERT INTO 
+            sessions ("userId",token) 
+        VALUES 
+            (1,'f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb');
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb',1,'Test insert 1','credit',50);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85a0ga9-2d4f-44e6-bf38-d07f6b9008cb',1,'Test insert 2','debit',15);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85a0ga9-2d4f-44e6-bf38-d07f4b9008cb',1,'Test insert 3','credit',20);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85r0ga9-2d4f-44e6-bg38-d07f6b9008cb',1,'Test insert 4','debit',7);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85g0ca9-2d4f-44e6-bf38-d07f6b9008cb',2,'Test insert 1','credit',50);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85h0ga9-2d4f-44e6-bf38-d07f6b9008cb',4,'Test insert 2','debit',15);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85q0ga9-2d4f-44e6-bf38-d07f4b9008cb',3,'Test insert 3','credit',20);
+        INSERT INTO
+            entries ("fakeId","userId","description","contabilType","value")
+        VALUES
+            ('f85x0ga9-2d4f-44e6-bg38-d07f6b9008cb',2,'Test insert 4','debit',7);
+        `)
         }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
+    );
+
+    afterEach(async () => {
+        await connection.query(`DELETE FROM entries;`)
+    })
+
+    afterAll(async () => {
+        return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries`);
+
+    })
+
+    it("return 200 for valid entrie", async () => {
+        const token = `Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb`
         const result = await supertest(app).get('/contabil-data').set('Authorization', token);
-        expect(result.status).toEqual(200)
+        expect(result.status).toEqual(200);
+        expect(result.body).toHaveProperty('movments');
+        expect(result.body.movments).toHaveLength(4);
+        expect(result.body).toHaveProperty('total', 48);
     })
 
     it("return 401 for no authorization", async () => {
@@ -213,25 +286,27 @@ describe("GET /contabil-data", () => {
     })
 
     it("return 204 for valid token and no data", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
-        }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
+        const token = `Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb`
         const result = await supertest(app).get('/contabil-data').set('Authorization', token);
         expect(result.status).toEqual(204)
     })
 })
 
 describe("POST /log-out", () => {
-    it("return 200 for a valid logout", async () => {
-        const bodyLogin = {
-            email: 'camilo.coelho.gomes@gmail.com',
-            password: '12345678*AbC'
+
+    beforeAll(
+        async () => {
+            await connection.query(`
+        INSERT INTO 
+            sessions ("userId",token) 
+        VALUES 
+            (1,'f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb');
+        `)
         }
-        const resultLogin = await supertest(app).post('/sign-in').send(bodyLogin);
-        const token = `Bearer ${resultLogin.body.token}`
+    )
+
+    it("return 200 for a valid logout", async () => {
+        const token = `Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb`
 
         const result = await supertest(app).post('/log-out').set('Authorization', token);
         expect(result.status).toEqual(200);
@@ -247,3 +322,5 @@ describe("POST /log-out", () => {
         expect(result.status).toEqual(400);
     });
 })
+
+//*/

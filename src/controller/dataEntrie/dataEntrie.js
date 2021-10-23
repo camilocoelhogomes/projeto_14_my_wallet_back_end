@@ -1,7 +1,11 @@
 import { existOne } from "../../dataBase/dataBaseValidations.js";
 import { postContabilDataDb } from "../../dataBase/postContabilDataDb/postContabilDataDb.js";
-import { getContabilDataDb } from "../../dataBase/postContabilDataDb/getContabilDataDb.js";
+import { getContabilDataDb, sumContabilType } from "../../dataBase/postContabilDataDb/getContabilDataDb.js";
 import dataEntrieSchema from "./dataEntrieSchema.js";
+
+const XOR = ({ input, equals: [xor1, xor2] }) => {
+    return input === xor1 ? input !== xor2 : input === xor2
+}
 
 const postContabilData = async (req, res) => {
 
@@ -10,7 +14,7 @@ const postContabilData = async (req, res) => {
     if (!token) return res.sendStatus(401);
     const movementData = req.body;
     const { error: joiError } = dataEntrieSchema.validate(movementData);
-    if (joiError || !(movementData?.contabilType === 'credit' ? movementData?.contabilType !== 'debit' : movementData?.contabilType === 'debit')) {
+    if (joiError || !XOR({ input: req.body.contabilType, equals: ['credit', 'debit'] })) {
         return res.sendStatus(400);
     }
     try {
@@ -55,7 +59,9 @@ const getContabilData = async (req, res) => {
         if (!isUser.rowCount) return res.sendStatus(401);
         const userData = await getContabilDataDb({ token: token });
         if (!userData.rowCount) return res.sendStatus(204);
-        return res.status(200).send({ movments: userData.rows });
+        const totalArray = await sumContabilType({ token: token });
+        const total = totalArray.rows.reduce((acc, cur) => cur.contabilType === 'credit' ? acc + cur.sum : acc - cur.sum, 0);
+        return res.status(200).send({ movments: userData.rows, total });
     } catch (error) {
         console.log(error);
         res.sendStatus(500);

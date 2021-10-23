@@ -21,4 +21,23 @@ const getContabilDataDb = ({ token }) => {
     return connection.query(query, dependencieArray);
 }
 
-export { getContabilDataDb }
+const sumContabilType = ({ token }) => {
+    const dependencieArray = [token];
+    const query = `
+    SELECT 
+        entries."contabilType", SUM(entries.value) 
+    FROM 
+        entries 
+    JOIN 
+        sessions 
+    ON 
+        sessions."userId" = entries."userId" 
+    WHERE 
+        sessions."token" = $1 
+    GROUP BY 
+        entries."contabilType";
+    `
+    return connection.query(query, dependencieArray);
+}
+
+export { getContabilDataDb, sumContabilType }
