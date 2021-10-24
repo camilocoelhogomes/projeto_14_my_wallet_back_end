@@ -41,7 +41,6 @@ const getContabilData = async (req, res) => {
     const authorization = req.headers.authorization;
     const token = authorization?.replace('Bearer ', '');
     if (!token) return res.sendStatus(401);
-
     try {
         const isUser = await existOne(
             {
