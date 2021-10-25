@@ -108,6 +108,15 @@ describe("POST /sigin-in", () => {
         expect(result.body).toHaveProperty('name');
     });
 
+    it("returns 400 for invalid email entrie", async () => {
+        const body = {
+            email: 'camilo.coelho.gomesgmail.com',
+            password: '12345678*AbC'
+        }
+        const result = await supertest(app).post('/sign-in').send(body);
+        expect(result.status).toEqual(400);
+    });
+
     it("returns 400 for invalid body", async () => {
         const body = {
             email: 'camilo.coelho.gomes@gmail.com',
