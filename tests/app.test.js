@@ -7,7 +7,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    return await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries;`)
+    await connection.query(`DELETE FROM users;DELETE FROM sessions;DELETE FROM entries;`);
+    connection.end();
 })
 
 describe("POST /sigin-up", () => {
