@@ -199,6 +199,21 @@ describe("POST /contabil-data", () => {
 
     });
 
+    it("returns 400 for negative value", async () => {
+        const body = {
+            description: 'Test entrie',
+            contabilType: 'debit',
+            value: -10.5,
+        }
+
+        const token = 'Bearer f85a0ca9-2d4f-44e6-bf38-d07f6b9008cb';
+
+        const result = await supertest(app).post('/contabil-data').set('Authorization', token).send(body)
+
+        expect(result.status).toEqual(400)
+
+    });
+
     it("returns 400 for invalid body", async () => {
         const body = {
             description: 'Test entrie',
